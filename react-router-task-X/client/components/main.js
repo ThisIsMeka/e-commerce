@@ -1,10 +1,14 @@
 import React from 'react'
-import Catalog from './catalog'
+import Cards from './cards'
 
 const Main = () => {
-  return <Catalog />
+  return (
+    <div>
+      <div className="pt-24 container mx-auto mt-20">
+        <Cards />
+      </div>
+    </div>
+  )
 }
-
-Main.propTypes = {}
 
 export default Main

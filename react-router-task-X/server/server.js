@@ -11,7 +11,8 @@ import cookieParser from 'cookie-parser'
 import config from './config'
 import Html from '../client/html'
 
-const { readFile } = require('fs').promises
+const { readFile, writeFile } = require('fs').promises
+const data = require('./data.js')
 
 const Root = () => ''
 
@@ -34,10 +35,6 @@ let connections = []
 const port = process.env.PORT || 8090
 const server = express()
 
-const rFile = () => {
-  return readFile(`${__dirname}/data.json`, { encoding: 'utf-8' }).then((data) => JSON.parse(data))
-}
-
 const middleware = [
   cors(),
   express.static(path.resolve(__dirname, '../dist/assets')),
@@ -48,29 +45,104 @@ const middleware = [
 
 middleware.forEach((it) => server.use(it))
 
-server.get('/api/v1/catalog', async (req, res) => {
-  const catalog = await rFile()
-  res.json(catalog)
+const write = async (logsList) => {
+  await writeFile(`${__dirname}/logs.json`, JSON.stringify(logsList), {
+    encoding: 'utf8'
+  })
+}
+
+const read = () => {
+  return readFile(`${__dirname}/logs.json`, { encoding: 'utf8' })
+    .then((result) => {
+      return JSON.parse(result)
+    })
+    .catch(() => [])
+}
+
+server.get('/api/v1/products', (req, res) => {
+  res.json(data)
 })
 
-server.get('/api/v1/currency/:type', async (req, res) => {
-  const { type } = req.params
-  const { data } = await axios('https://api.exchangeratesapi.io/latest')
-  const price = {
-    USD: {
-      value: data.rates.USD,
-      prefix: '$'
-    },
-    CAD: {
-      value: data.rates.CAD,
-      prefix: 'c$'
-    },
-    EUR: {
-      value: 1,
-      prefix: '€'
-    }
+server.post('/api/v1/logs', async (req, res) => {
+  const logs = await read()
+  let updatedLogs = []
+  if (req.body.type === 'ADD_TO_SELECTION') {
+    updatedLogs = [
+      ...logs,
+      {
+        time: +new Date(),
+        event: `added ${data.find((el) => el.id === req.body.id).title} to the basket`
+      }
+    ]
   }
-  res.json({ value: price[type].value, prefix: price[type].prefix })
+  if (req.body.type === 'REMOVE_FROM_SELECTION') {
+    updatedLogs = [
+      ...logs,
+      {
+        time: +new Date(),
+        event: `removed ${data.find((el) => el.id === req.body.id).title} from the basket`
+      }
+    ]
+  }
+  if (req.body.type === 'SET_CURRENT_PAGE') {
+    updatedLogs = [
+      ...logs,
+      {
+        time: +new Date(),
+        event: `navigated to ${req.body.page}`
+      }
+    ]
+  }
+
+  if (req.body.type === 'SET_SORT_TYPE') {
+    updatedLogs = [
+      ...logs,
+      {
+        time: +new Date(),
+        event: `sorted ${req.body.newType}`
+      }
+    ]
+  }
+
+  if (req.body.type === 'SET_BASE') {
+    updatedLogs = [
+      ...logs,
+      {
+        time: +new Date(),
+        event: `currency changed to ${req.body.base} from ${req.body.oldBase}`
+      }
+    ]
+  }
+  // if (req.body.type === 'SET_SEARCH') {
+  //   updatedLogs = [
+  //     ...logs,
+  //     {
+  //       time: +new Date(),
+  //       event: `searched ${req.body.search}`
+  //     }
+  //   ]
+  // }
+  // if (req.body.type === '@@router/LOCATION_CHANGE') {
+  //   updatedLogs = [
+  //     ...logs,
+  //     {
+  //       time: +new Date(),
+  //       event: `location changed to ${router.location.pathname}`
+  //     }
+  //   ]
+  // }
+  await write(updatedLogs)
+  res.json({ status: 'successfully' })
+})
+
+server.get('/api/v1/rates', async (req, res) => {
+  const { data: rates } = await axios('https://api.exchangeratesapi.io/latest?symbols=USD,CAD')
+  res.json(rates)
+})
+
+server.get('/api/v1/logs', async (req, res) => {
+  const logs = await read()
+  res.json(logs)
 })
 
 server.use('/api/', (req, res) => {

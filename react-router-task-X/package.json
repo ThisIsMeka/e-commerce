@@ -6,7 +6,7 @@
   "scripts": {
     "docker-start-dev": "docker-compose -f \"docker\\DEV.docker-compose.yml\" up",
     "docker-stop-dev": "docker-compose -f \"docker\\DEV.docker-compose.yml\" down",
-    "dev": "yarn run server & yarn run watch:client ",
+    "dev": "yarn run watch:server & yarn run watch:client ",
     "watch:client": "webpack-dev-server --mode development --config ./webpack.development.config.js",
     "dev:server": "webpack  --watch --config webpack.development.config.js",
     "start:dev": "webpack-dev-server --mode development --config ./webpack.development.config.js --open",
@@ -25,8 +25,7 @@
     "build:ssr": "cross-env NODE_ENV=production webpack --config webpack.ssr.config.js --progress --profile --colors",
     "heroku-postbuild": "yarn run build:prod",
     "storybook": "start-storybook -p 6006",
-    "build-storybook": "build-storybook",
-    "server": "npm start server/server.js"
+    "build-storybook": "build-storybook"
   },
   "author": "",
   "license": "MIT",
@@ -86,7 +85,6 @@
     "babel-preset-react-boilerplate": "1.1.1",
     "babel-preset-react-hmre": "1.1.1",
     "body-parser": "^1.19.0",
-    "caniuse-lite": "^1.0.30001187",
     "classnames": "^2.2.6",
     "connected-react-router": "^6.8.0",
     "cookie-parser": "^1.4.5",
@@ -171,7 +169,9 @@
   },
   "nodemonConfig": {
     "ignore": [
-      "*.hot-update.json"
+      "*.hot-update.json",
+      "client",
+      "server/**.json"
     ]
   },
   "husky": {

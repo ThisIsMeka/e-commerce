@@ -6,9 +6,9 @@ import { ConnectedRouter } from 'connected-react-router'
 import { Switch, Route, Redirect, StaticRouter } from 'react-router-dom'
 
 import store, { history } from '../redux'
+
 import Home from '../components/home'
 import DummyView from '../components/dummy-view'
-import Cart from '../components/cart'
 import NotFound from '../components/404'
 
 import Startup from './startup'
@@ -73,7 +73,8 @@ const RootComponent = (props) => {
         <Startup>
           <Switch>
             <Route exact path="/" component={() => <Home />} />
-            <Route exact path="/cart" component={() => <Cart />} />
+            <Route exact path="/cart" component={() => <Home />} />
+            <Route exact path="/logs" component={() => <Home />} />
             <PrivateRoute exact path="/hidden-route" component={() => <DummyView />} />
             <Route component={() => <NotFound />} />
           </Switch>

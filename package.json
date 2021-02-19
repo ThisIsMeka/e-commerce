@@ -26,6 +26,9 @@
     "storybook": "start-storybook -p 6006",
     "build-storybook": "build-storybook"
   },
+   "engines": {
+    "node": "12.16.3"
+  },
   "author": "",
   "license": "MIT",
   "jest": {
@@ -172,9 +175,6 @@
       "client",
       "server/**.json"
     ]
-  },
-  "engines": {
-    "node": ">=12"
   },
   "husky": {
     "hooks": {
